@@ -74,7 +74,7 @@ rqt_graph
 
 ### Your Workspace
 
-- Host: `~/kratos_ws/` → Container: `/workspace/`
+- Host: `~/ros2_ws/` → Container: `/workspace/`
 - Files you create on either side appear on both
 - Files are owned by **your user** (not root)
 
@@ -124,7 +124,7 @@ kratos shell    Open a bash shell inside the container (ROS2 pre-sourced)
 │  │ • rosbridge (ws://0.0.0.0:9090)                  │   │
 │  └──────────────────────────────────────────────────┘   │
 │                                                         │
-│  /workspace ←──── mounted from ~/kratos_ws              │
+│  /workspace ←──── mounted from ~/ros2_ws              │
 └─────────────────────────────────────────────────────────┘
               │
               │ WebSocket :9090 (rosbridge)

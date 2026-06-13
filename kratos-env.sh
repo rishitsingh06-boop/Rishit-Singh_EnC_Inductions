@@ -9,7 +9,7 @@ ORIG_ARGS="$*"
 # ── Config ──────────────────────────────────────────────────────────
 IMAGE="ghcr.io/project-kratos-lab/kratos-dev:latest"
 CONTAINER="kratos_dev"
-WS="$HOME/kratos_ws"
+WS="$HOME/ros2_ws"
 GENESIS_VENV="$HOME/kratos_genesis"
 
 # ── Colors ──────────────────────────────────────────────────────────
@@ -205,7 +205,7 @@ cmd_reset() {
     check_docker
 
     info "This will ${RED}destroy${NC} the container and all installed packages."
-    info "Your workspace files (~/kratos_ws) will NOT be deleted."
+    info "Your workspace files (~/ros2_ws) will NOT be deleted."
     echo ""
     read -p "Are you sure? [y/N] " -n 1 -r
     echo ""
