@@ -100,43 +100,6 @@ kratos shell    Open a bash shell inside the container (ROS2 pre-sourced)
 
 ---
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  Your Browser (any OS)                                  │
-│  http://localhost:6080/vnc.html                          │
-└─────────────┬───────────────────────────────────────────┘
-              │ HTTP + WebSocket
-              ▼
-┌─────────────────────────────────────────────────────────┐
-│  Docker Container (kratos_dev)                          │
-│                                                         │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────────────┐ │
-│  │  Xvnc    │  │ fluxbox  │  │ noVNC + websockify    │ │
-│  │ display  │  │ (window  │  │ (web proxy :6080)     │ │
-│  │   :1     │◄─│ manager) │  │                       │ │
-│  └──────────┘  └──────────┘  └───────────────────────┘ │
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ ROS2 Humble                                      │   │
-│  │ • Gazebo  • RViz2  • Nav2  • TurtleBot3          │   │
-│  │ • rosbridge (ws://0.0.0.0:9090)                  │   │
-│  └──────────────────────────────────────────────────┘   │
-│                                                         │
-│  /workspace ←──── mounted from ~/ros2_ws              │
-└─────────────────────────────────────────────────────────┘
-              │
-              │ WebSocket :9090 (rosbridge)
-              ▼
-┌─────────────────────────────────────────────────────────┐
-│  Host                                                   │
-│  python adapters                                        │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
 ## Troubleshooting
 
 **"Permission denied" on docker commands**
