@@ -60,7 +60,7 @@ detect_gpu() {
     GPU_FLAGS=""
     if command -v nvidia-smi &>/dev/null; then
         if docker info 2>/dev/null | grep -qi "nvidia"; then
-            GPU_FLAGS="--gpus all"
+            GPU_FLAGS="--runtime=nvidia"
             ok "NVIDIA GPU detected — enabling GPU passthrough"
         else
             warn "NVIDIA GPU found but nvidia-container-toolkit not configured.\n         Continuing without GPU. Run ${BOLD}./setup.sh${NC} to install it."
@@ -92,21 +92,19 @@ cmd_start() {
     # Check for existing stopped container (preserves installed packages)
     if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
         info "Restarting existing container (your installed packages are preserved)..."
-        RUN_OUTPUT=$(docker start "$CONTAINER" 2>&1)
-        if [ $? -ne 0 ]; then
+        if ! RUN_OUTPUT=$(docker start "$CONTAINER" 2>&1); then
             fail "Failed to restart container:\n       $RUN_OUTPUT"
         fi
     else
         info "Creating new container..."
-        RUN_OUTPUT=$(docker run -d --name "$CONTAINER" \
+        if ! RUN_OUTPUT=$(docker run -d --name "$CONTAINER" \
             $GPU_FLAGS \
             -e HOST_UID=$(id -u) \
             -e HOST_GID=$(id -g) \
             -p 127.0.0.1:6080:6080 \
             -p 127.0.0.1:9090:9090 \
             -v "$WS":/workspace \
-            "$IMAGE" 2>&1)
-        if [ $? -ne 0 ]; then
+            "$IMAGE" 2>&1); then
             fail "Failed to start container:\n       $RUN_OUTPUT"
         fi
     fi
