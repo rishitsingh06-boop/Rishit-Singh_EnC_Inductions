@@ -3,6 +3,7 @@
 # Usage: kratos {start|stop|status|shell|reset}
 set -e
 SCRIPT_PATH="$(realpath "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 ORIG_ARGS="$*"
 
 # ── Config ──────────────────────────────────────────────────────────
@@ -19,7 +20,7 @@ BLUE='\033[0;34m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-info()  { echo -e "${BLUE}[kratos]${NC} $1"; }
+info()  { echo -e "${BLUE}[kratos-dev]${NC} $1"; }
 ok()    { echo -e "${GREEN}[  OK  ]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[ WARN ]${NC} $1"; }
 fail()  { echo -e "${RED}[ FAIL ]${NC} $1" >&2; exit 1; }
@@ -79,7 +80,7 @@ cmd_start() {
         echo -e "  Desktop:   ${BOLD}http://localhost:6080/vnc.html${NC}"
         echo -e "  Rosbridge: ${BOLD}ws://localhost:9090${NC}"
         echo ""
-        echo -e "  Run ${BOLD}kratos stop${NC} first if you want to restart."
+        echo -e "  Run ${BOLD}kratos-env.sh stop${NC} first if you want to restart."
         return 0
     fi
 
@@ -104,7 +105,9 @@ cmd_start() {
             -p 127.0.0.1:6080:6080 \
             -p 127.0.0.1:9090:9090 \
             -v "$WS":/workspace \
-            "$IMAGE" 2>&1); then
+            -v "$SCRIPT_DIR/entrypoint.sh":/entrypoint.sh:ro \
+            "$IMAGE" 2>&1)
+        if [ $? -ne 0 ]; then
             fail "Failed to start container:\n       $RUN_OUTPUT"
         fi
     fi
@@ -118,14 +121,14 @@ cmd_start() {
 
     ok "Container started"
     echo ""
-    echo -e "${GREEN}${BOLD}╔══════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}${BOLD}║       Kratos Dev Environment Started         ║${NC}"
-    echo -e "${GREEN}${BOLD}╠══════════════════════════════════════════════╣${NC}"
-    echo -e "${GREEN}${BOLD}║${NC}  Desktop:   ${BOLD}http://localhost:6080/vnc.html${NC}   ${GREEN}${BOLD}║${NC}"
-    echo -e "${GREEN}${BOLD}║${NC}  Rosbridge: ${BOLD}ws://localhost:9090${NC}             ${GREEN}${BOLD}║${NC}"
-    echo -e "${GREEN}${BOLD}║${NC}  Shell:     ${BOLD}./kratos shell${NC}                  ${GREEN}${BOLD}║${NC}"
-    echo -e "${GREEN}${BOLD}║${NC}  Stop:      ${BOLD}./kratos stop${NC}                   ${GREEN}${BOLD}║${NC}"
-    echo -e "${GREEN}${BOLD}╚══════════════════════════════════════════════╝${NC}"
+    echo -e "${GREEN}${BOLD}╔════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}${BOLD}║         Kratos Dev Environment Started         ║${NC}"
+    echo -e "${GREEN}${BOLD}╠════════════════════════════════════════════════╣${NC}"
+    echo -e "${GREEN}${BOLD}║${NC}  Desktop:   ${BOLD}http://localhost:6080/vnc.html${NC}     ${GREEN}${BOLD}║${NC}"
+    echo -e "${GREEN}${BOLD}║${NC}  Rosbridge: ${BOLD}ws://localhost:9090${NC}                ${GREEN}${BOLD}║${NC}"
+    echo -e "${GREEN}${BOLD}║${NC}  Shell:     ${BOLD}./kratos-env.sh shell${NC}              ${GREEN}${BOLD}║${NC}"
+    echo -e "${GREEN}${BOLD}║${NC}  Stop:      ${BOLD}./kratos-env.sh stop${NC}               ${GREEN}${BOLD}║${NC}"
+    echo -e "${GREEN}${BOLD}╚════════════════════════════════════════════════╝${NC}"
     echo ""
 
     # macOS: activate Genesis venv + set ROS_DOMAIN_ID for cross-host comms
@@ -136,8 +139,8 @@ cmd_start() {
             exec bash --init-file <(cat <<INITEOF
 source "$GENESIS_VENV/bin/activate"
 export ROS_DOMAIN_ID=42
-echo -e "${GREEN}[kratos]${NC} Genesis venv active. ROS_DOMAIN_ID=42"
-echo -e "${GREEN}[kratos]${NC} Run ${BOLD}python adapters/genesis_bridge.py${NC} to start the bridge."
+echo -e "${GREEN}[kratos-dev]${NC} Genesis venv active. ROS_DOMAIN_ID=42"
+echo -e "${GREEN}[kratos-dev]${NC} Run ${BOLD}python adapters/genesis_bridge.py${NC} to start the bridge."
 PS1='\[\033[0;35m\][kratos-genesis]\[\033[0m\] \w\$ '
 INITEOF
             )
@@ -158,7 +161,7 @@ cmd_stop() {
 
     info "Stopping Kratos (your packages and files are preserved)..."
     docker stop "$CONTAINER" >/dev/null 2>&1
-    ok "Kratos stopped. Run ${BOLD}./kratos start${NC} to resume."
+    ok "Kratos stopped. Run ${BOLD}./kratos-env.sh start${NC} to resume."
 }
 
 cmd_status() {
@@ -173,10 +176,10 @@ cmd_status() {
         docker ps --filter "name=${CONTAINER}" --format "table {{.Status}}\t{{.Ports}}"
     elif docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
         info "Kratos is ${YELLOW}stopped${NC} (container exists, packages preserved)"
-        info "Run ${BOLD}./kratos start${NC} to resume."
+        info "Run ${BOLD}./kratos-env.sh start${NC} to resume."
     else
         info "Kratos is ${YELLOW}not created${NC}"
-        info "Run ${BOLD}./kratos start${NC} to create and start."
+        info "Run ${BOLD}./kratos-env.sh start${NC} to create and start."
     fi
 }
 
@@ -184,7 +187,7 @@ cmd_shell() {
     check_docker
 
     if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
-        fail "Kratos is not running. Run ${BOLD}./kratos start${NC} first."
+        fail "Kratos is not running. Run ${BOLD}./kratos-env.sh start${NC} first."
     fi
 
     info "Attaching to Kratos shell..."
@@ -193,8 +196,8 @@ cmd_shell() {
         [ -f /workspace/install/setup.bash ] && source /workspace/install/setup.bash
         export TURTLEBOT3_MODEL=waffle
         export HOME=/workspace
-        export PS1="\[\033[0;32m\][kratos]\[\033[0m\] \w\$ "
-        echo -e "\033[0;32m[kratos]\033[0m ROS2 sourced. You have sudo access (no password)."
+        export PS1="\[\033[0;32m\][kratos-dev]\[\033[0m\] \w\$ "
+        echo -e "\033[0;32m[kratos-dev]\033[0m ROS2 sourced. You have sudo access (no password)."
         exec bash --norc --noprofile
     '
 }
@@ -215,7 +218,7 @@ cmd_reset() {
 
     docker stop "$CONTAINER" 2>/dev/null || true
     docker rm "$CONTAINER" 2>/dev/null || true
-    ok "Container removed. Run ${BOLD}./kratos start${NC} to create a fresh one."
+    ok "Container removed. Run ${BOLD}./kratos-env.sh start${NC} to create a fresh one."
 }
 
 # ── Main ────────────────────────────────────────────────────────────
