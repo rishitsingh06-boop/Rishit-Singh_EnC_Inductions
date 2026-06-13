@@ -34,7 +34,7 @@ mkdir -p "$HOME/.vnc" "$HOME/.config/fluxbox" "$HOME/.ros" "$HOME/.gazebo" "$HOM
 chown -R "$HOST_UID:$HOST_GID" "$HOME/.vnc" "$HOME/.config" "$HOME/.ros" "$HOME/.gazebo" "$HOME/.rviz2" 2>/dev/null || true
 
 # Clean stale locks from previous runs
-rm -f /tmp/.X1-lock
+rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
 mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
 
 # VNC

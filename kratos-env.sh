@@ -106,8 +106,7 @@ cmd_start() {
             -p 127.0.0.1:9090:9090 \
             -v "$WS":/workspace \
             -v "$SCRIPT_DIR/entrypoint.sh":/entrypoint.sh:ro \
-            "$IMAGE" 2>&1)
-        if [ $? -ne 0 ]; then
+            "$IMAGE" 2>&1); then
             fail "Failed to start container:\n       $RUN_OUTPUT"
         fi
     fi
