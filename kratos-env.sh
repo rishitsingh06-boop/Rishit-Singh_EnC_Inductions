@@ -80,7 +80,7 @@ cmd_start() {
         echo -e "  Desktop:   ${BOLD}http://localhost:6080/vnc.html${NC}"
         echo -e "  Rosbridge: ${BOLD}ws://localhost:9090${NC}"
         echo ""
-        echo -e "  Run ${BOLD}kratos stop${NC} first if you want to restart."
+        echo -e "  Run ${BOLD}kratos-env.sh stop${NC} first if you want to restart."
         return 0
     fi
 
@@ -127,8 +127,8 @@ cmd_start() {
     echo -e "${GREEN}${BOLD}╠════════════════════════════════════════════════╣${NC}"
     echo -e "${GREEN}${BOLD}║${NC}  Desktop:   ${BOLD}http://localhost:6080/vnc.html${NC}     ${GREEN}${BOLD}║${NC}"
     echo -e "${GREEN}${BOLD}║${NC}  Rosbridge: ${BOLD}ws://localhost:9090${NC}                ${GREEN}${BOLD}║${NC}"
-    echo -e "${GREEN}${BOLD}║${NC}  Shell:     ${BOLD}./kratos shell${NC}                     ${GREEN}${BOLD}║${NC}"
-    echo -e "${GREEN}${BOLD}║${NC}  Stop:      ${BOLD}./kratos stop${NC}                      ${GREEN}${BOLD}║${NC}"
+    echo -e "${GREEN}${BOLD}║${NC}  Shell:     ${BOLD}./kratos-env.sh shell${NC}              ${GREEN}${BOLD}║${NC}"
+    echo -e "${GREEN}${BOLD}║${NC}  Stop:      ${BOLD}./kratos-env.sh stop${NC}               ${GREEN}${BOLD}║${NC}"
     echo -e "${GREEN}${BOLD}╚════════════════════════════════════════════════╝${NC}"
     echo ""
 
@@ -162,7 +162,7 @@ cmd_stop() {
 
     info "Stopping Kratos (your packages and files are preserved)..."
     docker stop "$CONTAINER" >/dev/null 2>&1
-    ok "Kratos stopped. Run ${BOLD}./kratos start${NC} to resume."
+    ok "Kratos stopped. Run ${BOLD}./kratos-env.sh start${NC} to resume."
 }
 
 cmd_status() {
@@ -177,10 +177,10 @@ cmd_status() {
         docker ps --filter "name=${CONTAINER}" --format "table {{.Status}}\t{{.Ports}}"
     elif docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
         info "Kratos is ${YELLOW}stopped${NC} (container exists, packages preserved)"
-        info "Run ${BOLD}./kratos start${NC} to resume."
+        info "Run ${BOLD}./kratos-env.sh start${NC} to resume."
     else
         info "Kratos is ${YELLOW}not created${NC}"
-        info "Run ${BOLD}./kratos start${NC} to create and start."
+        info "Run ${BOLD}./kratos-env.sh start${NC} to create and start."
     fi
 }
 
@@ -188,7 +188,7 @@ cmd_shell() {
     check_docker
 
     if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
-        fail "Kratos is not running. Run ${BOLD}./kratos start${NC} first."
+        fail "Kratos is not running. Run ${BOLD}./kratos-env.sh start${NC} first."
     fi
 
     info "Attaching to Kratos shell..."
@@ -219,7 +219,7 @@ cmd_reset() {
 
     docker stop "$CONTAINER" 2>/dev/null || true
     docker rm "$CONTAINER" 2>/dev/null || true
-    ok "Container removed. Run ${BOLD}./kratos start${NC} to create a fresh one."
+    ok "Container removed. Run ${BOLD}./kratos-env.sh start${NC} to create a fresh one."
 }
 
 # ── Main ────────────────────────────────────────────────────────────
