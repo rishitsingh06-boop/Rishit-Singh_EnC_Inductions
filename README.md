@@ -130,9 +130,8 @@ kratos shell    Open a bash shell inside the container (ROS2 pre-sourced)
               │ WebSocket :9090 (rosbridge)
               ▼
 ┌─────────────────────────────────────────────────────────┐
-│  macOS Host (optional)                                  │
-│  Genesis physics sim + roslibpy adapter                 │
-│  python adapters/genesis_bridge.py                      │
+│  Host                                                   │
+│  python adapters                                        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -145,25 +144,24 @@ kratos shell    Open a bash shell inside the container (ROS2 pre-sourced)
 sudo usermod -aG docker $USER
 newgrp docker    # or log out and back in
 ```
+**Apt can't find any package**
+```bash
+sudo apt update
+sudo apt install [package]
+```
+
 
 **Container starts but noVNC doesn't load**
 ```bash
-kratos status              # is it running?
+./kratos-env.sh status     # is it running?
 docker logs kratos_dev     # check for errors
 ```
 
-**"kratos: command not found"**
+**"kratos-env.sh: command not found"**
 ```bash
 # Either run from the repo directory:
-./kratos start
+./kratos-env.sh start
 
 # Or install to PATH:
-sudo cp kratos /usr/local/bin/
-```
-
-**GPU not detected**
-```bash
-nvidia-smi                 # GPU driver working?
-docker info | grep nvidia  # nvidia-container-toolkit installed?
-# If not: ./setup.sh will install it for you
+sudo cp kratos-env.sh /usr/local/bin/kratos
 ```
