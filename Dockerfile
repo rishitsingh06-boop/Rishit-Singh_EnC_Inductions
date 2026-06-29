@@ -5,6 +5,7 @@ FROM osrf/ros:humble-desktop-full
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fluxbox tigervnc-standalone-server \
     ros-humble-rviz2 ros-humble-rqt ros-humble-rqt-common-plugins ros-humble-rqt-graph \
+    ros-humble-joint-state-publisher \
     ros-humble-navigation2 ros-humble-nav2-bringup \
     ros-humble-turtlebot3 ros-humble-turtlebot3-gazebo ros-humble-turtlebot3-teleop \
     ros-humble-rosbridge-suite \
