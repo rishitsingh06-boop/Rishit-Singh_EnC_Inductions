@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="custom_arm">
+
+  <xacro:property name="base_plate_side" value="0.3"/>
+  <xacro:property name="base_plate_thick" value="0.02"/>
+  <xacro:property name="yaw_column_radius" value="0.04"/>
+  <xacro:property name="yaw_column_height" value="0.15"/>
+  <xacro:property name="arm_length" value="0.35"/>
+  <xacro:property name="PI" value="3.14159265359"/>
+
+  <material name="metal_grey"><color rgba="0.6 0.6 0.6 1.0"/></material>
+  <material name="aluminium_blue"><color rgba="0.0 0.3 0.6 1.0"/></material>
+  <material name="black"><color rgba="0.1 0.1 0.1 1.0"/></material>
+  <material name="servo_plastic"><color rgba="0.15 0.15 0.15 1.0"/></material>
+  <material name="horn_white"><color rgba="0.9 0.9 0.9 1.0"/></material>
+
+  <xacro:macro name="dummy_inertia" params="mass">
+    <inertial>
+      <mass value="${mass}"/>
+      <inertia ixx="${mass * 0.01}" ixy="0.0" ixz="0.0" iyy="${mass * 0.01}" iyz="0.0" izz="${mass * 0.01}"/>
+    </inertial>
+  </xacro:macro>
+
+  <link name="world"/>
+
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_plate_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_plate_link">
+    <visual>
+      <geometry><box size="${base_plate_side} ${base_plate_side} ${base_plate_thick}"/></geometry>
+      <origin xyz="0 0 ${base_plate_thick/2}" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <collision>
+      <geometry><box size="${base_plate_side} ${base_plate_side} ${base_plate_thick}"/></geometry>
+      <origin xyz="0 0 ${base_plate_thick/2}" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="5.0"/>
+  </link>
+
+  <joint name="base_yaw_joint" type="revolute">
+    <parent link="base_plate_link"/>
+    <child link="base_yaw_column_link"/>
+    <origin xyz="0 0 ${base_plate_thick}" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-${PI}" upper="${PI}" effort="100.0" velocity="1.0"/>
+  </joint>
+
+  <link name="base_yaw_column_link">
+    <visual>
+      <geometry><cylinder radius="${yaw_column_radius}" length="${yaw_column_height}"/></geometry>
+      <origin xyz="0 0 ${yaw_column_height/2}" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="${yaw_column_radius}" length="${yaw_column_height}"/></geometry>
+      <origin xyz="0 0 ${yaw_column_height/2}" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="3.0"/>
+  </link>
+
+  <joint name="shoulder_joint" type="revolute">
+    <parent link="base_yaw_column_link"/>
+    <child link="upper_arm_link"/>
+    <origin xyz="0 0 ${yaw_column_height}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-${PI/2}" upper="${PI/2}" effort="150.0" velocity="1.0"/>
+  </joint>
+
+  <link name="upper_arm_link">
+    <visual>
+      <geometry><cylinder radius="0.06" length="0.04"/></geometry>
+      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+      <material name="black"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.03 0.015 ${arm_length}"/></geometry>
+      <origin xyz="0 0 ${arm_length/2}" rpy="0 0 0"/>
+      <material name="aluminium_blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.05 0.05 ${arm_length}"/>
+      </geometry>
+        <origin xyz="0 0 ${arm_length/2}" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="1.5"/>
+  </link>
+
+  <joint name="elbow_joint" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="0 0 ${arm_length}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-${PI*0.75}" upper="${PI*0.75}" effort="100.0" velocity="1.5"/>
+  </joint>
+
+  <link name="forearm_link">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.03"/></geometry>
+      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+      <material name="black"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.02 0.01 ${arm_length}"/></geometry>
+      <origin xyz="0 0 ${arm_length/2}" rpy="0 0 0"/>
+      <material name="aluminium_blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.04 0.04 ${arm_length}"/>
+      </geometry>
+        <origin xyz="0 0 ${arm_length/2}" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="1.0"/>
+  </link>
+
+  <joint name="wrist_pitch_joint" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_bracket_link"/>
+    <origin xyz="0 0 ${arm_length}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-${PI/2}" upper="${PI/2}" effort="40.0" velocity="2.0"/>
+  </joint>
+
+  <link name="wrist_bracket_link">
+    <visual>
+      <geometry><box size="0.06 0.08 0.04"/></geometry>
+      <origin xyz="0 0 0.01" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.06 0.08 0.01"/></geometry>
+      <origin xyz="0 0 0.07" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.08 0.08 0.08"/>
+      </geometry>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="0.5"/>
+  </link>
+
+  <joint name="wrist_roll_joint" type="revolute">
+    <parent link="wrist_bracket_link"/>
+    <child link="wrist_output_shaft_link"/>
+    <origin xyz="0 0 0.07" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-${PI}" upper="${PI}" effort="40.0" velocity="2.0"/>
+  </joint>
+
+  <link name="wrist_output_shaft_link">
+    <visual>
+      <geometry><cylinder radius="0.015" length="0.03"/></geometry>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.015" length="0.03"/></geometry>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="0.2"/>
+  </link>
+
+  <joint name="gripper_mount_joint" type="fixed">
+    <parent link="wrist_output_shaft_link"/>
+    <child link="gripper_base_link"/>
+    <origin xyz="0 0 0.03" rpy="0 0 0"/>
+  </joint>
+
+  <link name="gripper_base_link">
+    <visual>
+      <geometry><box size="0.045 0.06 0.01"/></geometry>
+      <origin xyz="0 0 0.005" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.022 0.024 0.032"/></geometry>
+      <origin xyz="-0.005 0 0.026" rpy="0 0 0"/>
+      <material name="servo_plastic"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.012 0.04 0.075"/></geometry>
+      <origin xyz="0.0175 0 0.065" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.06 0.08 0.08"/>
+      </geometry>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="0.15"/>
+  </link>
+
+  <joint name="gripper_servo_joint" type="revolute">
+    <parent link="gripper_base_link"/>
+    <child link="moving_finger_link"/>
+    <origin xyz="-0.005 0 0.035" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/> 
+    <limit lower="-0.6" upper="0.0" effort="20.0" velocity="1.0"/>
+  </joint>
+
+  <link name="moving_finger_link">
+    <visual>
+      <geometry><box size="0.008 0.012 0.015"/></geometry>
+      <origin xyz="0 0 0.0025" rpy="0 0 0"/>
+      <material name="horn_white"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.01 0.06 0.075"/></geometry>
+      <origin xyz="-0.0125 0 0.0325" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.04 0.06 0.01"/></geometry>
+      <origin xyz="0.0025 0 -0.01" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <visual>
+      <geometry><box size="0.012 0.04 0.045"/></geometry>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <material name="metal_grey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.04 0.06 0.10"/>
+      </geometry>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    </collision>
+    <xacro:dummy_inertia mass="0.1"/>
+  </link>
+</robot>

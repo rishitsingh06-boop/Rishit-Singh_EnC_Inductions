@@ -1,0 +1,7 @@
+.git
+README.md
+setup.sh
+setup_mac.sh
+evaluation/
+adapters/
+*.md
