@@ -1,0 +1,33 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50  # Hz
+
+    #The Broadcaster (Required for RViz and TF Tree)
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    #Standard controller for the 4 steering hinges (Position)
+    steering_controller:
+      type: position_controllers/JointGroupPositionController
+
+    #Standard controller for the 4 wheel axles (Velocity)
+    drive_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+# Controller Parameters
+
+steering_controller:
+  ros__parameters:
+    joints:
+      - fl_steer_joint
+      - fr_steer_joint
+      - rl_steer_joint
+      - rr_steer_joint
+
+drive_controller:
+  ros__parameters:
+    joints:
+      - fl_drive_joint
+      - fr_drive_joint
+      - rl_drive_joint
+      - rr_drive_joint
